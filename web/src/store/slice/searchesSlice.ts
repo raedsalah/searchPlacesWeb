@@ -51,12 +51,17 @@ export const addFavorite = createAsyncThunk<
   }
 });
 
+const MAX_HISTORY_LENGTH = 5;
+
 const searchSlice = createSlice({
   name: "search",
   initialState: initialState,
   reducers: {
     addSearch: (state, action: PayloadAction<Place>) => {
-      state.history.push(action.payload);
+      if (state.history.length > MAX_HISTORY_LENGTH) {
+        state.history.pop();
+      }
+      state.history.unshift(action.payload);
       state.selectedPlace = action.payload;
     },
     selectPlace: (state, action: PayloadAction<Place>) => {
