@@ -33,6 +33,19 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/all", async (req: Request, res: Response) => {
+  try {
+    const conn = await pool.getConnection();
+    const result = await conn.query("TRUNCATE TABLE Favorites;");
+    conn.release();
+
+    res.status(200).json({ message: "Favorite cleared successfully" });
+  } catch (error) {
+    console.error("Error clearing favorite:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 router.delete("/:placeId", async (req: Request, res: Response) => {
   const { placeId } = req.params;
 
@@ -56,19 +69,6 @@ router.delete("/:placeId", async (req: Request, res: Response) => {
     res.status(200).json({ message: "Favorite removed successfully." });
   } catch (error) {
     console.error("Error removing favorite:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
-router.delete("/all", async (req: Request, res: Response) => {
-  try {
-    const conn = await pool.getConnection();
-    const result = await conn.query("TRUNCATE TABLE Favorites;");
-    conn.release();
-
-    res.status(200).json({ message: "Favorite cleared successfully" });
-  } catch (error) {
-    console.error("Error clearing favorite:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });

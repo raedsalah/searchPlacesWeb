@@ -9,10 +9,11 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Star } from "@mui/icons-material";
+import { Star, DeleteForever } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   Place,
+  removeAllFavorite,
   removeFavorite,
   selectPlace,
 } from "../store/slice/searchesSlice";
@@ -55,6 +56,9 @@ const FavoritesList: React.FC = () => {
   const handleSelectPlace = (place: Place) => {
     dispatch(selectPlace(place));
   };
+  const handleClearFavorites = () => {
+    dispatch(removeAllFavorite());
+  };
 
   const handleCloseSnackbar = (
     event?: React.SyntheticEvent | Event,
@@ -68,14 +72,22 @@ const FavoritesList: React.FC = () => {
 
   return (
     <>
-      <Typography variant="h5" gutterBottom>
-        Favorites
-      </Typography>
-      <List>
+      <div className="flex flex-row justify-between items-center">
+        <Typography variant="h5">Favorites</Typography>
+        <div
+          className="p-2 flex flex-row gap-1 justify-center items-center cursor-pointer"
+          onClick={handleClearFavorites}
+        >
+          <p className="text-red-500 cursor-pointer">Clear Favorite</p>{" "}
+          <DeleteForever fontSize="small" className="text-red-500" />
+        </div>
+      </div>
+      <List className="flex flex-col gap-2">
         {favorites.map((place, index) => {
           if (!place.place_id) return null;
           return (
             <ListItem
+              className="bg-slate-100 rounded-md shadow-md cursor-pointer"
               key={place.place_id || index}
               onClick={() => handleSelectPlace(place)}
               secondaryAction={

@@ -45,7 +45,7 @@ const Map: React.FC<MapProps> = ({ location }) => {
     return <div>Loading Map...</div>;
   }
 
-  return <div ref={mapRef} style={{ height: "400px", width: "100%" }} />;
+  return <div ref={mapRef} style={{ height: "100%", width: "100%" }} />;
 };
 
 export default Map;

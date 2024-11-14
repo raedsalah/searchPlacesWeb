@@ -76,6 +76,28 @@ export const removeFavorite = createAsyncThunk<
     return rejectWithValue(error.message || "Failed to remove favorite.");
   }
 });
+export const removeAllFavorite = createAsyncThunk<
+  Place[],
+  void,
+  { rejectValue: string }
+>("search/removeAllFavorite", async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`/api/favorites/all`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return rejectWithValue(
+        errorData.message || "Failed to remove all favorite."
+      );
+    }
+
+    return [];
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to remove favorite.");
+  }
+});
 
 export const fetchHistory = createAsyncThunk<
   Place[],
@@ -209,6 +231,19 @@ const searchSlice = createSlice({
         }
       )
       .addCase(removeFavorite.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to remove favorite.";
+      })
+      // remove all fav
+      .addCase(removeAllFavorite.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removeAllFavorite.fulfilled, (state) => {
+        state.loading = false;
+        state.favorites = [];
+      })
+      .addCase(removeAllFavorite.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to remove favorite.";
       })

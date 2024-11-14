@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import PlaceAutocomplete from "./components/PlaceAutocomplete";
-import SearchHistory from "./components/SearchHistory";
 import Map from "./components/Map";
-import { Container, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import GoogleMapsLoader from "./contexts/GoogleMapsLoader";
 import { fetchHistory, fetchFavorites } from "./store/slice/searchesSlice";
 import FavoritesList from "./components/FavoritesList";
+import "./styles/app.css";
 
 const App: React.FC = () => {
   const { selectedPlace } = useSelector((state: RootState) => state.search);
@@ -27,15 +27,21 @@ const App: React.FC = () => {
 
   return (
     <GoogleMapsLoader>
-      <Container>
-        <Typography variant="h4" gutterBottom>
-          Google Places Autocomplete
-        </Typography>
-        <PlaceAutocomplete />
-        <SearchHistory />
-        <FavoritesList />
-        {location && <Map location={location} />}
-      </Container>
+      <div className="flex min-h-screen flex-col md:flex-row">
+        <div className="p-4 md:p-8 flex-1">
+          <Typography variant="h4" gutterBottom>
+            Google Places Autocomplete
+          </Typography>
+          <PlaceAutocomplete />
+          <FavoritesList />
+        </div>
+
+        <div className="flex-1">
+          <div className="map-container h-[50vh] md:h-screen ">
+            <Map location={location} />
+          </div>
+        </div>
+      </div>
     </GoogleMapsLoader>
   );
 };

@@ -210,7 +210,7 @@ const PlaceAutocomplete: React.FC = () => {
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div className="relative mb-6">
       <TextField
         inputRef={inputRef}
         label="Search Places"
