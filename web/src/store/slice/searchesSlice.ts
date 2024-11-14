@@ -51,19 +51,92 @@ export const addFavorite = createAsyncThunk<
   }
 });
 
+export const fetchHistory = createAsyncThunk<
+  Place[],
+  void,
+  { rejectValue: string }
+>("search/fetchHistory", async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetch("/api/search");
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return rejectWithValue(errorData.message || "Failed to fetch history.");
+    }
+
+    const data = await response.json();
+    const places: Place[] = data.map((item: any) => ({
+      name: item.Name,
+      place_id: item.PlaceId,
+      geometry: {
+        lat: parseFloat(item.Latitude),
+        lng: parseFloat(item.Longitude),
+      },
+    }));
+
+    return places;
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to fetch history.");
+  }
+});
+
+export const fetchFavorites = createAsyncThunk<
+  string[],
+  void,
+  { rejectValue: string }
+>("search/fetchFavorites", async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetch("/api/favorites");
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return rejectWithValue(errorData.message || "Failed to fetch favorites.");
+    }
+
+    const data = await response.json();
+
+    const favoritePlaceIds: string[] = data.map((item: any) => item.PlaceId);
+
+    return favoritePlaceIds;
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to fetch favorites.");
+  }
+});
+
+export const addSearch = createAsyncThunk<
+  Place,
+  Place,
+  { rejectValue: string }
+>("search/addSearch", async (place, { rejectWithValue }) => {
+  try {
+    const response = await fetch("/api/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        placeId: place.place_id,
+        name: place.name,
+        latitude: place.geometry?.lat,
+        longitude: place.geometry?.lng,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return rejectWithValue(errorData.message || "Failed to add search.");
+    }
+
+    return place;
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to add search.");
+  }
+});
+
 const MAX_HISTORY_LENGTH = 5;
 
 const searchSlice = createSlice({
   name: "search",
   initialState: initialState,
   reducers: {
-    addSearch: (state, action: PayloadAction<Place>) => {
-      if (state.history.length > MAX_HISTORY_LENGTH) {
-        state.history.pop();
-      }
-      state.history.unshift(action.payload);
-      state.selectedPlace = action.payload;
-    },
     selectPlace: (state, action: PayloadAction<Place>) => {
       state.selectedPlace = action.payload;
     },
@@ -84,10 +157,59 @@ const searchSlice = createSlice({
       .addCase(addFavorite.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to add favorite.";
+      })
+      // fetch fav
+      .addCase(fetchFavorites.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchFavorites.fulfilled,
+        (state, action: PayloadAction<string[]>) => {
+          state.loading = false;
+          state.favorites = action.payload;
+        }
+      )
+      .addCase(fetchFavorites.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch favorites.";
+      })
+      // fetch history
+      .addCase(fetchHistory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchHistory.fulfilled,
+        (state, action: PayloadAction<Place[]>) => {
+          state.loading = false;
+          state.history = action.payload;
+        }
+      )
+      .addCase(fetchHistory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch history.";
+      })
+      // add history
+      .addCase(addSearch.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addSearch.fulfilled, (state, action: PayloadAction<Place>) => {
+        state.loading = false;
+        if (state.history.length >= MAX_HISTORY_LENGTH) {
+          state.history.pop();
+        }
+        state.history.unshift(action.payload);
+        state.selectedPlace = action.payload;
+      })
+      .addCase(addSearch.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to add search.";
       });
   },
 });
 
-export const { addSearch, selectPlace } = searchSlice.actions;
+export const { selectPlace } = searchSlice.actions;
 export default searchSlice.reducer;
 export const selectFavorites = (state: RootState) => state.search.favorites;

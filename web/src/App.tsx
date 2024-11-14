@@ -1,16 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import PlaceAutocomplete from "./components/PlaceAutocomplete";
 import SearchHistory from "./components/SearchHistory";
 import Map from "./components/Map";
-import { CircularProgress, Container, Typography } from "@mui/material";
-import { useSelector } from "react-redux";
-import { RootState } from "./store";
+import { Container, Typography } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "./store";
 import GoogleMapsLoader from "./contexts/GoogleMapsLoader";
+import { fetchHistory, fetchFavorites } from "./store/slice/searchesSlice";
 
 const App: React.FC = () => {
-  const { selectedPlace, favorites, history } = useSelector(
-    (state: RootState) => state.search
-  );
+  const { selectedPlace } = useSelector((state: RootState) => state.search);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchHistory());
+    dispatch(fetchFavorites());
+  }, [dispatch]);
 
   const location = selectedPlace
     ? {
