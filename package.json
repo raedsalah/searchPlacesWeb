@@ -2,13 +2,16 @@
   "name": "searchPlacesWeb",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "server",
+    "web"
+  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix web\"",
-    "build": "concurrently \"npm run build --prefix server\" \"npm run build --prefix web\"",
-    "start": "concurrently \"npm run start --prefix server\" \"npm run start --prefix web\""
+    "dev": "concurrently \"yarn workspace server dev\" \"yarn workspace web dev\"",
+    "build": "concurrently \"yarn workspace server build\" \"yarn workspace web build\"",
+    "start": "concurrently \"yarn workspace server start\" \"yarn workspace web start\""
   },
   "devDependencies": {
     "concurrently": "^8.2.0"
-  },
-  "dependencies": {}
+  }
 }
