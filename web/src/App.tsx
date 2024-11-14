@@ -11,46 +11,13 @@ const App: React.FC = () => {
   const { selectedPlace, favorites, history } = useSelector(
     (state: RootState) => state.search
   );
-  const [loading, setLoading] = useState<boolean>(true);
-
-  // Fetch user's geolocation on app start
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // setDefaultLocation({
-          //   lat: position.coords.latitude,
-          //   lng: position.coords.longitude,
-          // });
-          setLoading(false);
-        },
-        (error) => {
-          console.error("Error fetching geolocation:", error);
-          setLoading(false);
-        }
-      );
-    } else {
-      setLoading(false);
-    }
-  }, []);
 
   const location = selectedPlace
     ? {
         lat: selectedPlace.geometry!.lat,
         lng: selectedPlace.geometry!.lng,
       }
-    : { lat: 40.7128, lng: -74.006 };
-
-  if (loading) {
-    return (
-      <Container style={{ textAlign: "center", marginTop: "50px" }}>
-        <CircularProgress />
-        <Typography variant="h6" style={{ marginTop: "20px" }}>
-          Loading map...
-        </Typography>
-      </Container>
-    );
-  }
+    : { lat: 3.139, lng: 101.6869 };
 
   return (
     <GoogleMapsLoader>
