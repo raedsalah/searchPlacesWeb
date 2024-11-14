@@ -4,28 +4,40 @@ import pool from "../config/db";
 const router = Router();
 
 router.post("/", async (req: Request, res: Response) => {
-  const { placeId } = req.body;
+  const { placeId, name, latitude, longitude } = req.body;
 
-  if (!placeId) {
-    res.status(400).json({ message: "placeId is required" });
+  if (!placeId || !name || latitude === undefined || longitude === undefined) {
+    res.status(400).json({
+      message: "placeId, name, latitude, and longitude are required.",
+    });
+    return;
   }
 
   try {
     const conn = await pool.getConnection();
-    await conn.query("INSERT INTO Favorites (PlaceId) VALUES (?)", [placeId]);
+
+    await conn.query(
+      "INSERT INTO Favorites (PlaceId, Name, Latitude, Longitude) VALUES (?, ?, ?, ?)",
+      [placeId, name, latitude, longitude]
+    );
+
     conn.release();
-    res.status(201).json({ message: "Favorite added successfully" });
-  } catch (error) {
+    res.status(201).json({ message: "Favorite added successfully." });
+  } catch (error: any) {
+    if (error.code === "ER_DUP_ENTRY") {
+      res.status(409).json({ message: "Favorite already exists." });
+      return;
+    }
     console.error("Error adding favorite:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-router.delete("/", async (req: Request, res: Response) => {
-  const { placeId } = req.body;
+router.delete("/:placeId", async (req: Request, res: Response) => {
+  const { placeId } = req.params;
 
   if (!placeId) {
-    res.status(400).json({ message: "placeId is required" });
+    res.status(400).json({ message: "placeId is required." });
     return;
   }
 
@@ -37,13 +49,13 @@ router.delete("/", async (req: Request, res: Response) => {
     conn.release();
 
     if (result.affectedRows === 0) {
-      res.status(404).json({ message: "Favorite not found" });
+      res.status(404).json({ message: "Favorite not found." });
       return;
     }
 
-    res.status(200).json({ message: "Favorite deleted successfully" });
+    res.status(200).json({ message: "Favorite removed successfully." });
   } catch (error) {
-    console.error("Error deleting favorite:", error);
+    console.error("Error removing favorite:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });

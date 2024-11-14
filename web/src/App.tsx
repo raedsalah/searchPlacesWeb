@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import GoogleMapsLoader from "./contexts/GoogleMapsLoader";
 import { fetchHistory, fetchFavorites } from "./store/slice/searchesSlice";
+import FavoritesList from "./components/FavoritesList";
 
 const App: React.FC = () => {
   const { selectedPlace } = useSelector((state: RootState) => state.search);
@@ -32,6 +33,7 @@ const App: React.FC = () => {
         </Typography>
         <PlaceAutocomplete />
         <SearchHistory />
+        <FavoritesList />
         {location && <Map location={location} />}
       </Container>
     </GoogleMapsLoader>
