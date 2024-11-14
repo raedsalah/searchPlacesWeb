@@ -4,12 +4,18 @@ import {
   List,
   ListItem,
   ListItemText,
-  Button,
   Snackbar,
   Alert,
+  IconButton,
 } from "@mui/material";
 import { AppDispatch, RootState } from "../store";
-import { addFavorite, Place, selectPlace } from "../store/slice/searchesSlice";
+import {
+  addFavorite,
+  Place,
+  removeFavorite,
+  selectPlace,
+} from "../store/slice/searchesSlice";
+import { StarBorder, Star } from "@mui/icons-material";
 
 const SearchHistory: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,25 +31,53 @@ const SearchHistory: React.FC = () => {
     severity: "success",
   });
 
-  const handleFavorite = async (placeId: string) => {
-    try {
-      const resultAction = await dispatch(addFavorite(placeId));
-      if (addFavorite.fulfilled.match(resultAction)) {
+  const handleToggleFavorite = async (place: Place) => {
+    if (!place.place_id) return;
+
+    const isFavorited = favorites.some(
+      (fav) => fav.place_id === place.place_id
+    );
+
+    if (isFavorited) {
+      try {
+        const resultAction = await dispatch(removeFavorite(place.place_id));
+        if (removeFavorite.fulfilled.match(resultAction)) {
+          setSnackbar({
+            open: true,
+            message: "Favorite removed successfully!",
+            severity: "success",
+          });
+        } else {
+          throw new Error(resultAction.payload || "Failed to remove favorite.");
+        }
+      } catch (error: any) {
+        console.error("Error removing favorite:", error);
         setSnackbar({
           open: true,
-          message: "Favorite added successfully!",
-          severity: "success",
+          message: "Error removing favorite.",
+          severity: "error",
         });
-      } else {
-        throw new Error(resultAction.payload || "Failed to add favorite.");
       }
-    } catch (error: any) {
-      console.error("Error adding favorite:", error);
-      setSnackbar({
-        open: true,
-        message: "Error adding favorite.",
-        severity: "error",
-      });
+    } else {
+      try {
+        const resultAction = await dispatch(addFavorite(place));
+        if (addFavorite.fulfilled.match(resultAction)) {
+          setSnackbar({
+            open: true,
+            message: "Favorite added successfully!",
+            severity: "success",
+          });
+        } else {
+          throw new Error(resultAction.payload || "Failed to add favorite.");
+        }
+      } catch (error: any) {
+        console.error("Error adding favorite:", error);
+        setSnackbar({
+          open: true,
+          message: "Error adding favorite.",
+          severity: "error",
+        });
+      }
     }
   };
 
@@ -65,22 +99,30 @@ const SearchHistory: React.FC = () => {
     <>
       <List>
         {history.map((place, index) => {
-          console.log(place);
+          if (!place.place_id) return null; // skip if no id, migrating from old structure
+          const isFavorited = favorites.some(
+            (fav) => fav.place_id === place.place_id
+          );
           return (
             <ListItem
               key={place.place_id || index}
               onClick={() => handleSelectPlace(place)}
               secondaryAction={
                 place.place_id ? (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleFavorite(place.place_id!)}
+                  <IconButton
+                    edge="end"
+                    aria-label="favorite"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleFavorite(place);
+                    }}
                   >
-                    {favorites.includes(place.place_id!)
-                      ? "Favorited"
-                      : "Favorite"}
-                  </Button>
+                    {isFavorited ? (
+                      <Star sx={{ color: "gold" }} />
+                    ) : (
+                      <StarBorder />
+                    )}
+                  </IconButton>
                 ) : null
               }
             >
