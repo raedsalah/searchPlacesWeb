@@ -1,0 +1,14 @@
+{
+  "name": "searchPlacesWeb",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix web\"",
+    "build": "concurrently \"npm run build --prefix server\" \"npm run build --prefix web\"",
+    "start": "concurrently \"npm run start --prefix server\" \"npm run start --prefix web\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "dependencies": {}
+}
