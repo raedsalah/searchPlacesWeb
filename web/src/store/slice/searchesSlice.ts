@@ -57,6 +57,7 @@ const searchSlice = createSlice({
   reducers: {
     addSearch: (state, action: PayloadAction<Place>) => {
       state.history.push(action.payload);
+      state.selectedPlace = action.payload;
     },
     selectPlace: (state, action: PayloadAction<Place>) => {
       state.selectedPlace = action.payload;
