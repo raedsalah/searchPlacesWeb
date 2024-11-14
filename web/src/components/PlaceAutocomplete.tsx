@@ -34,7 +34,16 @@ const PlaceAutocomplete: React.FC = () => {
     const handlePlaceSelect = () => {
       if (autocompleteRef.current) {
         const place = autocompleteRef.current.getPlace();
-        dispatch(addSearch(place));
+        dispatch(
+          addSearch({
+            name: place.name,
+            place_id: place.place_id,
+            geometry: {
+              lat: place.geometry!.location!.lat(),
+              lng: place.geometry!.location!.lng(),
+            },
+          })
+        );
       }
     };
 

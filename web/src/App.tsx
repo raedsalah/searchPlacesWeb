@@ -7,14 +7,14 @@ import { useSelector } from "react-redux";
 import { RootState } from "./store";
 
 const App: React.FC = () => {
-  const selectedPlace = useSelector((state: RootState) =>
-    state.searches.length > 0 ? state.searches[state.searches.length - 1] : null
+  const { selectedPlace, favorites, history } = useSelector(
+    (state: RootState) => state.search
   );
 
-  const location = selectedPlace?.geometry?.location
+  const location = selectedPlace
     ? {
-        lat: selectedPlace.geometry.location.lat(),
-        lng: selectedPlace.geometry.location.lng(),
+        lat: selectedPlace.geometry!.lat,
+        lng: selectedPlace.geometry!.lng,
       }
     : null;
 

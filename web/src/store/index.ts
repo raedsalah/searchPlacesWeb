@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import searchesReducer from "./slice/searchesSlice";
+import searchReducer from "./slice/searchesSlice";
 
 const store = configureStore({
   reducer: {
-    searches: searchesReducer,
+    search: searchReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
 });

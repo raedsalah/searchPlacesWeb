@@ -1,21 +1,87 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "..";
 
-interface Place {
+export interface Place {
   name?: string;
   place_id?: string;
-  geometry?: google.maps.places.PlaceGeometry;
+  geometry?: {
+    lat: number;
+    lng: number;
+  };
   [key: string]: any;
 }
 
-const searchesSlice = createSlice({
-  name: "searches",
-  initialState: [] as Place[],
+interface SearchState {
+  history: Place[];
+  selectedPlace: Place | null;
+  favorites: string[];
+  loading: boolean;
+  error: string | null;
+}
+
+const initialState: SearchState = {
+  history: [], //
+  selectedPlace: null,
+  favorites: [],
+  loading: false,
+  error: null,
+};
+
+// thunks
+export const addFavorite = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("places/addFavorite", async (placeId, { rejectWithValue }) => {
+  try {
+    const response = await fetch("/api/favorites", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ placeId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return rejectWithValue(errorData.message || "Failed to add favorite.");
+    }
+
+    return placeId;
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to add favorite.");
+  }
+});
+
+const searchSlice = createSlice({
+  name: "search",
+  initialState: initialState,
   reducers: {
     addSearch: (state, action: PayloadAction<Place>) => {
-      state.push(action.payload);
+      state.history.push(action.payload);
     },
+    selectPlace: (state, action: PayloadAction<Place>) => {
+      state.selectedPlace = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(addFavorite.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        addFavorite.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          state.favorites.push(action.payload);
+        }
+      )
+      .addCase(addFavorite.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to add favorite.";
+      });
   },
 });
 
-export const { addSearch } = searchesSlice.actions;
-export default searchesSlice.reducer;
+export const { addSearch, selectPlace } = searchSlice.actions;
+export default searchSlice.reducer;
+export const selectFavorites = (state: RootState) => state.search.favorites;
